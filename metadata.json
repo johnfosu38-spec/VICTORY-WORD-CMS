@@ -1,0 +1,6 @@
+{
+  "name": "Victory Word Glorious Church - CMS",
+  "description": "A production-ready Church Management System (CMS) for churches in Ghana and globally, featuring attendance, finance, and membership management.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": []
+}

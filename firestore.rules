@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields: uid, email, role (super_admin, pastor, secretary, treasurer, dept_head, member), branch
+    //
+    // Collection: members
+    // Fields: firstName, lastName, phone, branch, status, etc.
+    //
+    // Collection: attendance
+    // Fields: eventId, memberId, timestamp, branch
+    //
+    // Collection: finance
+    // Fields: type, amount, date, branch, memberId
+    //
+    // Collection: events
+    // Fields: title, date, branch
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        getUserData().role == 'super_admin' ||
+        (request.auth.token.email == "johnfosu38@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    function isSecretary() { return isRole('secretary') || isRole('pastor') || isAdmin(); }
+    function isTreasurer() { return isRole('treasurer') || isAdmin(); }
+    function isPastor() { return isRole('pastor') || isAdmin(); }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId) && (
+        request.resource.data.role == 'member' || isAdmin()
+      );
+      allow update: if isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role);
+    }
+
+    match /members/{memberId} {
+      allow read: if isSecretary() || isPastor() || isTreasurer();
+      allow write: if isSecretary();
+    }
+
+    match /attendance/{recordId} {
+      allow read: if isSecretary() || isPastor();
+      allow write: if isSecretary();
+    }
+
+    match /finance/{recordId} {
+      allow read: if isTreasurer() || isPastor();
+      allow write: if isTreasurer();
+    }
+
+    match /expenses/{recordId} {
+      allow read: if isTreasurer() || isPastor();
+      allow write: if isTreasurer();
+    }
+
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if isSecretary() || isPastor();
+    }
+
+    match /departments/{deptId} {
+      allow read: if isAuthenticated();
+      allow write: if isPastor() || isAdmin();
+    }
+
+    match /messages/{msgId} {
+      allow read: if isSecretary() || isPastor();
+      allow write: if isSecretary() || isPastor();
+    }
+
+    match /sundaySchool/{sessionId} {
+      allow read: if isSecretary() || isPastor() || isRole('dept_head');
+      allow write: if isSecretary() || isRole('dept_head');
+    }
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "System users with RBAC roles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "url" },
+        "role": { "type": "string", "enum": ["super_admin", "pastor", "secretary", "treasurer", "dept_head", "member"] },
+        "branch": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Member": {
+      "title": "Church Member",
+      "description": "Information about a church member.",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "phone": { "type": "string" },
+        "momoNetwork": { "type": "string", "enum": ["MTN", "Telecel", "AirtelTigo"] },
+        "location": { "type": "string" },
+        "gps": { "type": "string" },
+        "occupation": { "type": "string" },
+        "maritalStatus": { "type": "string", "enum": ["Single", "Married", "Widowed", "Divorced"] },
+        "gender": { "type": "string", "enum": ["Male", "Female"] },
+        "department": { "type": "string" },
+        "branch": { "type": "string" },
+        "photoURL": { "type": "string", "format": "url" },
+        "familyId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Inactive", "Visitor"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["firstName", "lastName", "phone", "branch"]
+    },
+    "Attendance": {
+      "title": "Attendance Record",
+      "description": "Service or event attendance log.",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string" },
+        "memberId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "checkInType": { "type": "string", "enum": ["Manual", "QR"] },
+        "branch": { "type": "string" }
+      },
+      "required": ["eventId", "memberId", "timestamp"]
+    },
+    "Finance": {
+      "title": "Financial Record",
+      "description": "Income from tithes, offerings, etc.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["Tithe", "Offering", "Donation", "Welfare", "Pledge"] },
+        "amount": { "type": "number" },
+        "memberId": { "type": "string" },
+        "memberName": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "paymentMethod": { "type": "string", "enum": ["Cash", "MoMo", "Bank"] },
+        "branch": { "type": "string" },
+        "period": { "type": "string" }
+      },
+      "required": ["type", "amount", "date", "branch"]
+    },
+    "Expense": {
+      "title": "Expense Record",
+      "description": "Church operational costs.",
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "receiptUrl": { "type": "string", "format": "url" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "approvedBy": { "type": "string" },
+        "branch": { "type": "string" }
+      },
+      "required": ["description", "amount", "date", "branch"]
+    },
+    "Event": {
+      "title": "Church Event",
+      "description": "Programs and scheduled activities.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "location": { "type": "string" },
+        "branch": { "type": "string" },
+        "recursive": { "type": "boolean" }
+      },
+      "required": ["title", "date", "branch"]
+    },
+    "Department": {
+      "title": "Church Department",
+      "description": "Organizational units like Choir, Ushers, etc.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "headUid": { "type": "string" },
+        "headName": { "type": "string" },
+        "memberCount": { "type": "number" },
+        "branch": { "type": "string" }
+      },
+      "required": ["name", "branch"]
+    },
+    "Message": {
+      "title": "Communication Log",
+      "description": "Record of SMS or WhatsApp messages sent.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["SMS", "WhatsApp"] },
+        "recipientIds": { "type": "array", "items": { "type": "string" } },
+        "content": { "type": "string" },
+        "status": { "type": "string", "enum": ["Sent", "Pending", "Failed"] },
+        "sentAt": { "type": "string", "format": "date-time" },
+        "sentBy": { "type": "string" },
+        "branch": { "type": "string" }
+      },
+      "required": ["type", "content", "sentAt", "branch"]
+    },
+    "SundaySchoolSession": {
+      "title": "Sunday School Session",
+      "description": "Attendance and activities for children.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time" },
+        "teacherId": { "type": "string" },
+        "topic": { "type": "string" },
+        "attendanceCount": { "type": "number" },
+        "notes": { "type": "string" },
+        "branch": { "type": "string" }
+      },
+      "required": ["date", "branch"]
+    }
+  },
+  "firestore": {
+    "users": { "schema": "User", "description": "System users" },
+    "members": { "schema": "Member", "description": "Church congregation members" },
+    "attendance": { "schema": "Attendance", "description": "Attendance logs" },
+    "finance": { "schema": "Finance", "description": "Income records" },
+    "expenses": { "schema": "Expense", "description": "Expenditure records" },
+    "events": { "schema": "Event", "description": "Program calendar" },
+    "departments": { "schema": "Department", "description": "Church departments" },
+    "messages": { "schema": "Message", "description": "Sent messages history" },
+    "sundaySchool": { "schema": "SundaySchoolSession", "description": "Sunday School records" }
+  }
+}
